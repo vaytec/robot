@@ -2,10 +2,12 @@ const util = require('util')
 const Promise = require("bluebird")
 const _ = require('lodash')
 const golos = require('steem')
+
 golos.config.set('websocket','ws://localhost:9090');
 // На серверах без ноды голоса или steem указывайте адрес публичной ноды
 // Например wss://ws.golos.io
-// Настройки ниже определяют к какому блокчейну вы намерены подключится. Уберите 2 строки ниже, что бы использовать бота для стим
+// Настройки ниже определяют к какому блокчейну вы намерены подключатся. Уберите 2 строки ниже, что бы использовать бота для стим
+
 golos.config.set('address_prefix','GLS');
 golos.config.set('chain_id','782a3039b478c839e4cb0c941ff4eaeb7df40bdd68bd441afd444b9da763de12');
 
@@ -13,6 +15,8 @@ golos.config.set('chain_id','782a3039b478c839e4cb0c941ff4eaeb7df40bdd68bd441afd4
 const botname = 'robot'
 
 // Приватный ключ ОБСУЖДАЕМОЕ 
+// Так как бот будет отправлять монеты - вам понадобится ключ, который отвечает за переводы. Не публикуйте открыто этот ключ! 
+// Лучшей практикой будет хранить данный ключ в переменной среды env
 const wif = ''
 
 // Сумма для уведомлений
@@ -82,7 +86,7 @@ const [type, data] = operation
 		
 		
 		if  (reblogData[0] === 'reblog') {
-          // Фильтруем аккаунты бизнес молодлсти и тех, кто отписался от рассылки
+          // Фильтруем аккаунты бизнес молодости и тех, кто отписался от рассылки
            if(!reblogData[1].author.includes('bm-') && reblogData[1].author !=="oxisunbeam"){
 			
 			console.log(`@${initiator} сделал репост ${reblogData[1].permlink} `)
@@ -178,7 +182,7 @@ const SENDBLOCK = currentblock => {
 }
 
 // Определяем стартовый блок на начало работы скрипта
-// Каждые 3 секунды увеличивае номер блока на 1
+// Каждые 3 секунды увеличиваем номер блока на 1
 const NEXTBLOCKS = firstblock => {
     let currentblock = firstblock
     setInterval(() => {
