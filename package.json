@@ -1,0 +1,19 @@
+{
+  "name": "Steem/Golos mention Robot",
+  "version": "1.0.0",
+  "description": "Mention Bot for golos.io and steemit.com",
+  "main": "robot.js",
+  "scripts": {
+    "start": "node robot.js"
+  },
+  "keywords": [
+    "golos"
+  ],
+  "dependencies": {
+    "bluebird": "^3.4.7",
+    "lodash": "^4.17.4",
+    "steem": "^0.5.3"
+   },
+  "author": "vik",
+  "license": "MIT"
+}
