@@ -19,7 +19,7 @@ const wif = ''
 const ammount = '0.001 GOLOS'
 
 // Логин автора, которого хотите поддержать
-const winner  = 'med'
+const winner  = 'vik'
 
 // Ссылка на пост автора, которого хотите поддержать
 const post    = 'permlink'
@@ -37,7 +37,7 @@ let trig = {
 	// можно добавить другие триггеры для обработки ошибок
 }
 
-const blacklist = 'pioner777888'
+const blacklist = 'robot'
 
 // Получение глобальных динамических данных
 const dynamicSnap = new Promise((resolve, reject) => {
