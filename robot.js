@@ -2,12 +2,10 @@ const util = require('util')
 const Promise = require("bluebird")
 const _ = require('lodash')
 const golos = require('steem')
-
 golos.config.set('websocket','ws://localhost:9090');
 // На серверах без ноды голоса или steem указывайте адрес публичной ноды
 // Например wss://ws.golos.io
-// Настройки ниже определяют к какому блокчейну вы намерены подключатся. Уберите 2 строки ниже, что бы использовать бота для стим
-
+// Настройки ниже определяют к какому блокчейну вы намерены подключится. Уберите 2 строки ниже, что бы использовать бота для стим
 golos.config.set('address_prefix','GLS');
 golos.config.set('chain_id','782a3039b478c839e4cb0c941ff4eaeb7df40bdd68bd441afd444b9da763de12');
 
@@ -15,15 +13,13 @@ golos.config.set('chain_id','782a3039b478c839e4cb0c941ff4eaeb7df40bdd68bd441afd4
 const botname = 'robot'
 
 // Приватный ключ ОБСУЖДАЕМОЕ 
-// Так как бот будет отправлять монеты - вам понадобится ключ, который отвечает за переводы. Не публикуйте открыто этот ключ! 
-// Лучшей практикой будет хранить данный ключ в переменной среды env
 const wif = ''
 
 // Сумма для уведомлений
 const ammount = '0.001 GOLOS'
 
 // Логин автора, которого хотите поддержать
-const winner  = 'username'
+const winner  = 'med'
 
 // Ссылка на пост автора, которого хотите поддержать
 const post    = 'permlink'
@@ -41,6 +37,7 @@ let trig = {
 	// можно добавить другие триггеры для обработки ошибок
 }
 
+const blacklist = 'pioner777888'
 
 // Получение глобальных динамических данных
 const dynamicSnap = new Promise((resolve, reject) => {
@@ -74,7 +71,13 @@ const [type, data] = operation
 		// Вы так же можете добавить && data.author === post что бы бот учитывал голоса только за определенный пост
 		// Отправляем ему донат с примечанием
 		golos.broadcast.transfer(wif, botname, winner, ammountw, memo,
-						 function(err, result) {console.log(err, result);});
+						 function(err, result) {
+							  if(err){
+						console.log(err);  
+					  } else {
+						  console.log(`Донат ${winner} ${ammountw}`)
+					  }
+							 });
 						}
 			}
 				
@@ -86,13 +89,18 @@ const [type, data] = operation
 		
 		
 		if  (reblogData[0] === 'reblog') {
-          // Фильтруем аккаунты бизнес молодости и тех, кто отписался от рассылки
+          // Фильтруем аккаунты бизнес молодлсти и тех, кто отписался от рассылки
            if(!reblogData[1].author.includes('bm-') && reblogData[1].author !=="oxisunbeam"){
 			
-			console.log(`@${initiator} сделал репост ${reblogData[1].permlink} `)
+			
             // Отправляем уведомление о реблоге
 			golos.broadcast.transfer(wif, botname, reblogData[1].author, ammount, `⚡ @${initiator} сделал репост вашей записи 👉 ${reblogData[1].permlink}`, function(err, result) {
-                	  console.log(err, result);
+                	  if(err){
+						console.log(err);  
+					  } else {
+						  console.log(`@${initiator} сделал репост ${reblogData[1].permlink} `)
+					  }
+					  
                 	});
         
 			}
@@ -105,29 +113,42 @@ const [type, data] = operation
 			const data = reblogData[1].what[0];
 			const user = reblogData[1].following;
 			
-			if(!user.includes('bm-') && user !=="oxisunbeam"){
+			if(!user.includes('bm-') && !blacklist.includes(initiator) && user !=="oxisunbeam"){
 			
 			// Детектим игнор
 			if (data === 'ignore'){
-				console.log(`@${initiator} добавил в игнор  ${reblogData[1].following}`)
+				
             golos.broadcast.transfer(wif, botname, user, ammount, `🚩 @${initiator} добавил вас в игнор`, function(err, result) {
-                	  console.log(err, result);
+                	  if(err){
+						console.log(err);  
+					  } else {
+						  console.log(`@${initiator} добавил в игнор  ${reblogData[1].following}`)
+						 
+					  }
                 	});
 				
 			}
 			// Детектим подписку
 			else if(data === 'blog'){
 				
-				console.log(`@${initiator} подписался на  ${reblogData[1].following}`)
+				
             golos.broadcast.transfer(wif, botname, user, ammount, `👍 @${initiator} подписался на ваш блог!`, function(err, result) {
-                	  console.log(err, result);
+                	   if(err){
+						console.log(err);  
+					  } else {
+						  console.log(`@${initiator} подписался на  ${reblogData[1].following}`)
+					  }
                 	});
 			}
 			// В ином случае это отписка
 			else {
-				console.log(`@${initiator} ОТПИСАЛСЯ на  ${reblogData[1].following}`)
+				
             golos.broadcast.transfer(wif, botname, user, ammount, `❗ @${initiator} отписался от вашего блога`, function(err, result) {
-                	  console.log(err, result);
+                	   if(err){
+						console.log(err);  
+					  }else{
+						  console.log(`@${initiator} ОТПИСАЛСЯ от ${reblogData[1].following}`)
+					  }
                 	});
 				
 			}
@@ -145,15 +166,24 @@ const [type, data] = operation
 	// if(isNew){ /*    */}
 	const metaData = JSON.parse(data.json_metadata)
 	if (typeof metaData.users !== 'undefined') {
+		const mentions = metaData.users
 	// Если хотим игнорировать стороние приложения: 
 	//&& metaData.app !== "habreplicator"
 	// Или если хотим игнорировать определенных пользователей, например bm аккаунты
 	//if (metaData.users[0].length > 1 && !metaData.users[0].includes('bm-') && metaData.users[0] !=="oxisunbeam") {}
-                console.log(`@${metaData.users[0]} найден тут @${data.author}${data.permlink}`)
-                	golos.broadcast.transfer(wif, botname, metaData.users[0], ammount, `💡 @${data.author} упомянул вас в сообщении  https://golos.io/@${data.author}/${data.permlink} `, function(err, result) {
-                	  console.log(err, result);
+            
+				for (let mention of mentions) {
+					golos.broadcast.transfer(wif, botname, mention, ammount, `💡 @${data.author} упомянул вас в сообщении  https://golos.io/@${data.author}/${data.permlink} `, function(err, result) {
+                	   if(err){
+						console.log(err);  
+					  } else {
+						  console.log(`@${mention} упомянут тут @${data.author}${data.permlink}`)
+                
+					  }
                 	});
             
+			
+			}
         }
         
 
@@ -182,7 +212,7 @@ const SENDBLOCK = currentblock => {
 }
 
 // Определяем стартовый блок на начало работы скрипта
-// Каждые 3 секунды увеличиваем номер блока на 1
+// Каждые 3 секунды увеличивае номер блока на 1
 const NEXTBLOCKS = firstblock => {
     let currentblock = firstblock
     setInterval(() => {
