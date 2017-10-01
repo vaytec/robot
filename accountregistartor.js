@@ -1,5 +1,5 @@
 const golos = require('golos-js')
-golos.config.set('websocket', "ws://localhost:9090")
+golos.config.set('websocket', "wss://api.golos.cf")
 
 // Данные создателя аккаунта
 // Активный ключ создателя (вашего существующего аккаунта)
