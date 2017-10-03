@@ -48,5 +48,14 @@ memoKey,
 jsonMetadata, 
 (err, result) => {
   if(err) return console.log(err);
-    console.log(result)
+	 let keys = golos.auth.getPrivateKeys(NAME, PASS, ["owner","active","posting","memo"]);
+	console.log(`=============================
+Логин: ${NAME}
+Пароль: ${PASS}
+Постинг: ${keys.posting}
+Активный: ${keys.active}
+Владелец: ${keys.owner}
+============================================
+`)
+   // console.log(result)
 });
