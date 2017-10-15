@@ -1,3 +1,4 @@
+// BEWARE! 30 days hold for this ops
 const golos = require('golos-js')
 golos.config.set('websocket', "wss://api.golos.cf")
 
