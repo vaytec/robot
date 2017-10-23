@@ -1,5 +1,5 @@
 const WS = 'ws://localhost:9090'
-const copyright = "https://golos.io/@vik"
+const copyright = ""
 const golos = require('golos-js')
 const redKey = "lastblocknumber"
 const WebSocket = require('ws');
@@ -10,10 +10,10 @@ const client = redis.createClient()
 golos.config.set('websocket', WS);
 
 const botname = 'robot'
-const wif = '5*******************************'
+const wif = '5****************ACTIVEKEY***********************'
 const ammount = '0.001 GOLOS'
 
-const blacklist = ['spamaccount']
+const blacklist = ['spamaccount','scam','badass']
 
 const OPSFILTER = (operation) => {
     const [type, data] = operation
@@ -60,10 +60,11 @@ const OPSFILTER = (operation) => {
                     golos.api.getAccounts([user, INITIATOR], (err, response) => {
 
 
-                        let isNormalINIT = response[1].reputation > 10e8;
-                        let isWhaleINIT = response[1].reputation > 10e10;
-                        let isNormalUSER = response[0].reputation > 10e10;
-                        let isWhaleUSER = response[0].reputation > 10e8;
+                        let isNormalINIT = response[1].reputation > 10e10 && response[1].posting_rewards > 6e4;
+                        let isWhaleINIT = response[1].reputation > 10e13 && response[1].posting_rewards > 6e6;
+                       
+                        let isNormalUSER = response[0].reputation > 10e10 && response[0].posting_rewards > 2e5;
+                        let isWhaleUSER = response[0].reputation > 10e13 && response[0].posting_rewards > 6e6;
 
                         if ((isNormalUSER && isNormalINIT) || (isWhaleINIT || isWhaleUSER)) {
 
@@ -145,8 +146,8 @@ const OPSFILTER = (operation) => {
     }
     if (type === 'account_witness_vote') {
 
-        if (data.aprove) {
-            golos.broadcast.transfer(wif, botname, data.account, ammount, `👨🏼‍🚀 @${data.account} проголосовал за вашу ноду Делегата ${copyright}`, function (err, result) {
+        if (data.approve) {
+            golos.broadcast.transfer(wif, botname, data.witness, ammount, `👨🏼‍🚀 @${data.account} проголосовал за вашу ноду Делегата ${copyright}`, function (err, result) {
                 if (err) {
                     return console.warn(err);
                 } else {
@@ -156,7 +157,7 @@ const OPSFILTER = (operation) => {
 
             });
         } else {
-            golos.broadcast.transfer(wif, botname, data.account, ammount, `😈 @${data.account} снял голос с вашей ноды Делегата ${copyright}`, function (err, result) {
+            golos.broadcast.transfer(wif, botname, data.witness, ammount, `😈 @${data.account} снял голос с вашей ноды Делегата ${copyright}`, function (err, result) {
                 if (err) {
                     return console.warn(err);
                 } else {
@@ -184,17 +185,23 @@ const OPSFILTER = (operation) => {
             if (metaData && typeof metaData.users !== 'undefined' && !blacklist.includes(data.author)) {
 
                 const mentions = metaData.users
+                if(typeof mentions !== 'object')return
                 for (mention of mentions) {
 
                     let usname = mention.toLowerCase().replace("@", "")
-                    golos.broadcast.transfer(wif, botname, usname, ammount, `💡 @${data.author} упомянул вас в сообщении  https://golos.io/@${data.author}/${data.permlink}  ${copyright}`, function (err, result) {
-                        if (err) {
-                            return console.warn(err);
-                        } else {
-                            console.log(`@${mention} упомянут тут @${data.author}/${data.permlink}`)
 
-                        }
+                    golos.api.getAccounts([usname], (err, result)=> {
+                        if(err||!result[0]) return 
+                        golos.broadcast.transfer(wif, botname, usname, ammount, `💡 @${data.author} упомянул вас в сообщении  https://golos.io/@${data.author}/${data.permlink}  ${copyright}`, (err, result)=> {
+                            if (err) {
+                                return console.warn(err);
+                            } else {
+                                console.log(`@${mention} упомянут тут @${data.author}/${data.permlink}`)
+    
+                            }
+                        });
                     });
+                   
 
 
                 }
@@ -279,7 +286,7 @@ ws.on('open', open = () => {
 
         if (data.method === "notice" && data.params) {
             let hex = data.params[1][0].previous.slice(0, 8)
-            height = parseInt(hex, 16)
+            height = parseInt(hex, 16)-2
             timestamp = data.params[1][0].timestamp
             if (getNOW || height < fheight) client.set(redKey, height);
             client.get(redKey, (err, num) => {
