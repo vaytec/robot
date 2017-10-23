@@ -1,4 +1,7 @@
 ## A bot that reports various events of any account on GOLOS/STEEM
+https://golos.io/ru--golos/@vik/openrobot
+https://golos.io/ru--golos/@robot/obnovlenie-robot-teper-s-vozmozhnostyu-massovykh-upominanii
+
 
 # Dependencies
 
