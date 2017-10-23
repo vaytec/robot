@@ -1,3 +1,5 @@
+## A bot that reports various events of any account on GOLOS/STEEM
+
 # Dependencies
 
 * nodejs
@@ -5,7 +7,9 @@
 
 ### Installation
 `npm install golos-js` or `npm install steem`
+
 `npm install redis`
+
 `npm install pm2`
 
 ### Run
