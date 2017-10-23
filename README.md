@@ -1,50 +1,20 @@
+# Dependencies
 
-# Установка
-У вас должен быть установлен nodejs и git
+* nodejs
+* redis
 
- Клонируем репозиторий
- 
-` git clone https://github.com/vikxx/robot.git`
+### Installation
+`npm install golos-js` or `npm install steem`
+`npm install redis`
+`npm install pm2`
 
- Переходим в директорию
- 
-` cd robot`
+### Run
 
- Устанавливаем STEEM API
- 
-` npm install steem`
+From current block in blockchain
+`pm2 start robot.js --now`
 
-# Настройка
-Настраиваем путем редакции файла `robot.js`
+From last remebered block number
+`pm2 start robot.js`
 
-Логин бота
-
-`const botname = 'robot'`
-
-Приватный ключ ОБСУЖДАЕМОЕ 
-
-`const wif = ''`
-
-Сумма для уведомлений
-
-`const ammount = '0.001 GOLOS'`
-
-Логин автора, которого хотите поддержать
-
-`const winner  = 'username'`
-
-Ссылка на пост автора, которого хотите поддержать
-
-`const post    = 'permlink'`
-
-Размер поддержки
-
-`const ammountw = '1.000 GOLOS'`
-
-Примечание к платежу - оно же уведомление
-
-`const memo = "💰 Ваш пост попал в программу поддержки качественного контента. Каждый раз, когда за вас проголосуют robot отправит вам 1 GOLOS"`
-
-
-
-# MIT License
+From custom block
+`pm2 start robot.js 1245678`
