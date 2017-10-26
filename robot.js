@@ -6,14 +6,10 @@ const WebSocket = require('ws');
 const ws = new WebSocket(WS);
 const redis = require("redis")
 const client = redis.createClient()
-
-golos.config.set('websocket', WS);
-
 const botname = 'robot'
-const wif = '5****************ACTIVEKEY***********************'
+const wif = '5***************ACTIVEKEY*********************'
 const ammount = '0.001 GOLOS'
-
-const blacklist = ['spamaccount','scam','badass']
+const blacklist = ["ivi", "ivi-1", "ivi-2", "ivi-3", "top-girl"]
 
 const OPSFILTER = (operation) => {
     const [type, data] = operation
@@ -93,42 +89,10 @@ const OPSFILTER = (operation) => {
                             }
                             // В ином случае это отписка
                             else {
-                                golos.api.getFollowCount(user, (err, count) => {
-                                    if (err) return console.warn(err)
-                                    let last = null
-                                    let names = []
-                                    const getfollowings = (lastname) => {
-                                        golos.api.getFollowing(user, lastname, "blog", 100, (errs, followings) => {
-                                            if (errs) return console.warn(errs)
-                                            if (last === followings[followings.length - 1].following) {
-
-                                                if (names.includes(initiator)) {
-                                                    golos.broadcast.transfer(wif, botname, user, ammount, `❗ @${initiator} отписался от вашего блога ${copyright}`, function (err, result) {
-                                                        if (err) return console.warn(err);
-                                                        return console.log(`@${initiator} отписался ${reblogData[1].following}`)
-                                                    });
-                                                } else {
-                                                    golos.broadcast.transfer(wif, botname, user, ammount, `🤝 @${initiator} перестал вас игнорить  ${copyright}`, function (err, result) {
-                                                        if (err) return console.warn(err);
-                                                        return console.log(`@${initiator} перестал игнорить ${reblogData[1].following}`)
-                                                    });
-                                                }
-                                                return
-                                            }
-
-                                            for (let z of followings) names.push(z.following)
-                                            last = followings[followings.length - 1].following
-                                            getfollowings(last)
-
-                                        })
-                                    }
-
-                                    getfollowings(last)
-                                })
-
-
-
-
+                                golos.broadcast.transfer(wif, botname, user, ammount, `@${initiator} стал соблюдать нейтралитет (это означает, что он отписался или перестал игнорировать вас) ${copyright}`, function (err, result) {
+                                                if (err) return console.warn(err);
+                                                return console.log(`@${initiator} отписался ${user}`)
+                                 });
 
                             }
 
@@ -174,16 +138,20 @@ const OPSFILTER = (operation) => {
 
 
     if (type === 'comment') {
-        console.log(data.author, data.permlink)
+       
 
         golos.api.getContent(data.author, data.permlink, (err, result) => {
             if (err) return console.log(err)
             if (data.active !== data.created) return console.log(`Редактирование поста ${data.author} - упоминания не отправляются!`)
-
-
+            
             const metaData = (data.json_metadata) ? JSON.parse(data.json_metadata) : false;
             if (metaData && typeof metaData.users !== 'undefined' && !blacklist.includes(data.author)) {
-
+                golos.api.getAccounts([data.author], (err, response) => {
+                    if(err ||!response) return
+                    
+                if(response[0].reputation < 10e10 && response[0].posting_rewards < 7e4)return console.log(`${data.author} не может упоминать из-за низкой репутации`)
+                
+               
                 const mentions = metaData.users
                 if(typeof mentions !== 'object')return
                 for (mention of mentions) {
@@ -196,8 +164,8 @@ const OPSFILTER = (operation) => {
                             if (err) {
                                 return console.warn(err);
                             } else {
-                                console.log(`@${mention} упомянут тут @${data.author}/${data.permlink}`)
-    
+                                console.log(`@${result.operations[0][1].to} упомянут тут @${data.author}/${data.permlink}`)
+                                
                             }
                         });
                     });
@@ -205,6 +173,8 @@ const OPSFILTER = (operation) => {
 
 
                 }
+
+            });
             }
         });
 
